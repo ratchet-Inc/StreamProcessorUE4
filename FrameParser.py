@@ -25,7 +25,7 @@ def ParseFrame(data: list, w = FrameWidth, h = FrameHeight, lossy = LossyFrame) 
             arr[col][row] = temp
             temp = []
             row += lossy
-            if row >= FrameWidth:
+            if row >= w:
                 col += 1
                 row = 0
             pass
