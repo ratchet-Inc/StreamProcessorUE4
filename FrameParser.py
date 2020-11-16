@@ -1,13 +1,13 @@
 #! C:/Python3
 import numpy as NP
 
-FrameWidth = 600
-FrameHeight = 480
-LossyFrame = 2
+FrameWidth = 640
+FrameHeight = 360
+LossyFrame = 1
 
 
-def ParseFrame(data: list) -> list:
-    arr = NP.zeros([FrameHeight, FrameWidth, 3], NP.uint8)
+def ParseFrame(data: list, w = FrameWidth, h = FrameHeight, lossy = LossyFrame) -> list:
+    arr = NP.zeros([h, w, 3], NP.uint8)
     byt = 0
     temp = []
     col = 0
@@ -20,10 +20,11 @@ def ParseFrame(data: list) -> list:
             buf = ''
             pass
         if len(temp) == 3:
+            #convert from RGB to BGR
             temp[0], temp[2] = temp[2], temp[0]
             arr[col][row] = temp
             temp = []
-            row += LossyFrame
+            row += lossy
             if row >= FrameWidth:
                 col += 1
                 row = 0
