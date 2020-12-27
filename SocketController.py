@@ -1,4 +1,5 @@
 import socket
+import base64
 
 class SocketController():
     """ A simple socket abstraction class to remove complexity elsewhere """
@@ -18,8 +19,11 @@ class SocketController():
     def Listen(self):
         self.ssocket.listen()
         return self.ssocket.accept()
-    def SendData(self, msg: str):
-        return self.ssocket.send(msg)
-    def RecvData(self, conn):
-        return self.ssocket.recv(self.buffLen)
+    def SendData(self, conn:socket, msg: str)->int:
+        return self.conn.send(msg)
+    def RecvData(self, conn: socket) -> str:
+        return base64.b64encode(conn.recv(self.buffLen)).decode()
+    def Close(self):
+        self.ssocket.close()
+        pass
     pass

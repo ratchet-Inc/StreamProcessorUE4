@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 .vs/
+/Client_Package

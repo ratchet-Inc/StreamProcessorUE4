@@ -9,15 +9,20 @@ import SocketController
 import FrameParser
 import time
 import StreamTest as ST
+import DatabaseInterface
 
 def ParseArgs():
-    args = JSON.loads('{"-host": "192.168.100.64", "-port":8000 }') # default arguments
+    args = JSON.loads('{"-host": "127.0.0.1", "-port":8000 }') # default arguments
+    args['-bsize'] = 34 * 1024   # 34 kb approximate default 480p stream size
     for i in range(1, len(sys.argv)):
         if('-host' == sys.argv[i].lower()):
             args['-host'] = sys.argv[i+1].strip()
             pass
         if('-port' == sys.argv[i].lower()):
             args['-port'] = sys.argv[i+1].strip()
+            pass
+        if('-bsize' == sys.argv[i].lower()):
+            args['-bsize'] = sys.argv[i+1].strip()
             pass
         pass
     return args
@@ -78,9 +83,25 @@ def TestFunc():
     ParseData2(r)
     return 0
 
+def main_JPEG_Stream(args):
+    sock = SocketController.SocketController(args['-host'], args['-port'], args['-bsize'])
+    sock.InitSocket_Server()
+    print("*stream processor is listening..")
+    conn, addr = sock.Listen()
+    print("Connected by Address: ", addr)
+    while(True):
+        recv = sock.RecvData(conn)
+        pass
+    sock.Close()
+    return 0
+
+def main_MP4_Stream(args):
+    return 0
+
 if __name__ == "__main__":
     args = ParseArgs()
     #main()
     #TestFunc()
     #ParseData()
-    ST.RunTest()
+    #ST.RunTest()
+    main_JPEG_Stream(ParseArgs())

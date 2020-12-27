@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DatabaseInterface.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FrameParser.py">
       <SubType>Code</SubType>
     </Compile>
