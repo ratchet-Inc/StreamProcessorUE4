@@ -84,6 +84,11 @@ def TestFunc():
     return 0
 
 def main_JPEG_Stream(args):
+    db = DatabaseInterface.DB(cname = "stream", creg = True, cinit = True)
+    res = db.Init()
+    if(res != 0):
+        print("*failed to connect to database.")
+        return 1
     sock = SocketController.SocketController(args['-host'], args['-port'], args['-bsize'])
     sock.InitSocket_Server()
     print("*stream processor is listening..")
@@ -91,8 +96,11 @@ def main_JPEG_Stream(args):
     print("Connected by Address: ", addr)
     while(True):
         recv = sock.RecvData(conn)
+        db.SendData(recv)
+        #time.sleep(0.1667)
         pass
     sock.Close()
+    db.Close()
     return 0
 
 def main_MP4_Stream(args):
