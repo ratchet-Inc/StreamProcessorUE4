@@ -149,5 +149,5 @@ if __name__ == "__main__":
     #main()
     #TestFunc()
     #ParseData()
-    #ST.RunTest()
-    main_JPEG_Stream(ParseArgs())
+    ST.RunTest()
+    #main_JPEG_Stream(ParseArgs())
