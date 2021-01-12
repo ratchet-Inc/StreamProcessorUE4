@@ -45,8 +45,8 @@ def EncodeTestFunc():
 
 def StreamTestFunc():
     def CalcSegments(msgLen):
-        data = [1, 0.3334, msgLen]
-        maxSegLen = 31 * 1024
+        data = [1, 0.03334, msgLen]
+        maxSegLen = 16 * 1024
         quotient = math.ceil(msgLen / maxSegLen)
         if quotient > 1:
             data[2] = maxSegLen
@@ -61,12 +61,14 @@ def StreamTestFunc():
         return 1
     frameCounter = 1
     while(True):
-        time.sleep(0.41667)
+        time.sleep(0.041667)
+        start = time.time()
+        end = time.time()
         recv = testFrame.GetSampleFrame()
         recvLen = len(recv)
         #print("recieved: %s | bytes: %s." % (recv, recvLen))
         segData = CalcSegments(recvLen)
-        print("segment info: %s" % segData)
+        #print("segment info: %s" % segData)
         for x in range(segData[0]):
             lowerBound = segData[2] * x
             upperBound = segData[2] * (x + 1)
@@ -78,7 +80,7 @@ def StreamTestFunc():
             obj['seg'] = x
             obj['frm'] = recv[lowerBound:upperBound]
             d = JSON.dumps(obj)
-            print("segment[%s:%s]: %s" % (lowerBound, upperBound, d))
+            #print("segment[%s:%s]: %s" % (lowerBound, upperBound, d))
             GUC.SendToCache(d, append = True)
             time.sleep(segData[1])
             pass
@@ -87,8 +89,10 @@ def StreamTestFunc():
         obj['frm'] = "END FRAME"
         obj['seg'] = segData[0]
         GUC.SendToCache(JSON.dumps(obj), append = True)
+        end = time.time()
+        print('frame: %d | time: %s' % (frameCounter, end - start))
         frameCounter += 1
-        break
+        #break
         pass
     GUC.CloseAPI()
     return 0
