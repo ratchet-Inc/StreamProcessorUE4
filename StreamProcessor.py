@@ -17,7 +17,7 @@ GLOBAL_TERMINATE_SIGNAL = False
 
 def ParseArgs():
     args = JSON.loads('{"-host": "127.0.0.1", "-port":8000 }') # default arguments
-    args['-bsize'] = 48 * 1024   # 48 kb approximate default 720p stream size
+    args['-bsize'] = 34 * 1024   # 34 kb approximate default 480p stream size
     for i in range(1, len(sys.argv)):
         if('-host' == sys.argv[i].lower()):
             args['-host'] = sys.argv[i+1].strip()
@@ -112,7 +112,7 @@ def CalcSegments(msgLen):
 def main_JPEG_Stream(args):
     global GLOBAL_TERMINATE_SIGNAL
     # applying closing signal
-    signal.signal(signal.SIGTERM, SignalHandler)
+    signal.signal(signal.SIGTSTP, SignalHandler)
     db = DatabaseInterface.DB(cname = "stream", creg = True, cinit = True)
     res = db.Init()
     if(res != 0):
@@ -137,12 +137,10 @@ def main_JPEG_Stream(args):
             break
         # caviot: appearantly my encryption method increases the size of the messages
         # so my UDP messages end up being larger than 64Kb, so I have to send the message in segments
-        print("waitng..")
         recv = sock.RecvData(conn)
         recvLen = len(recv)
-        sock.SendData(conn, "bytes: " + str(recvLen))
         print("recieved: %s | bytes: %s." % (recv, recvLen))
-        """segData = CalcSegments(recvLen)
+        segData = CalcSegments(recvLen)
         for x in range(segData[0]):
             lowerBound = segData[2] * x
             upperBound = segData[2] * (x + 1)
@@ -154,14 +152,14 @@ def main_JPEG_Stream(args):
             obj['seg'] = x
             obj['frm'] = recv[lowerBound:upperBound]
             #print("segment[%s:%s]: %s" % (lowerBound, upperBound, recv[lowerBound:upperBound]))
-            db.SendData(JSON.dumps(obj), True)
+            db.SendData(recv[lowerBound:upperBound], True)
             time.sleep(segData[1])
             pass
         obj = JSON.loads('{}')
         obj['_'] = frameCounter
         obj['frm'] = "END FRAME"
         obj['seg'] = segData[0]
-        db.SendData(JSON.dumps(obj), append = True)"""
+        db.SendToCache(JSON.dumps(obj), append = True)
         frameCounter += 1
         pass
     sock.Close()
@@ -177,5 +175,5 @@ if __name__ == "__main__":
     #main()
     #TestFunc()
     #ParseData()
-    #ST.RunTest()
-    main_JPEG_Stream(ParseArgs())
+    ST.RunTest()
+    #main_JPEG_Stream(ParseArgs())
