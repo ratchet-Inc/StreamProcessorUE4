@@ -12,7 +12,7 @@ class DB(object):
     def Init(self):
         return API.InitAPI(self.h, self.cacheReg, self.cacheInit, self.cacheName)
     def SendData(self, msg: str, append: bool = False)->int:
-        return API.SendToCache(msg, append)
+        return API.SendToCache(msg, ip_addr = self.h, append = append)
     def Close(self):
         return API.CloseAPI()
     pass
