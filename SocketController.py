@@ -20,7 +20,7 @@ class SocketController():
         self.ssocket.listen()
         return self.ssocket.accept()
     def SendData(self, conn:socket, msg: str)->int:
-        return self.conn.send(msg)
+        return self.conn.send(msg+'\0')
     def RecvData(self, conn: socket) -> str:
         return base64.b64encode(conn.recv(self.buffLen)).decode()
     def Close(self):
