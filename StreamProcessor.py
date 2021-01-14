@@ -11,6 +11,9 @@ import time
 import StreamTest as ST
 import DatabaseInterface
 import math
+import signal
+
+GLOBAL_TERMINATE_SIGNAL = False
 
 def ParseArgs():
     args = JSON.loads('{"-host": "127.0.0.1", "-port":8000 }') # default arguments
@@ -84,26 +87,38 @@ def TestFunc():
     ParseData2(r)
     return 0
 
+def SignalHandler():
+    global GLOBAL_TERMINATE_SIGNAL
+    print('closing signal triggered.')
+    GLOBAL_TERMINATE_SIGNAL = True
+    pass
+
 def CalcSegments(msgLen):
     # base segment is 1 | base sleep time is 16.667 ms
     # since maximum UDP packet includes header data I'm using
     # 32000 bytes as divisor instead of the full 32Kb
-    data = [1, 0.1667, msgLen]
-    quotient = math.ceil(msgLen / 32000)
+    data = [1, 0.03334, msgLen]
+    # setting a static maximum segment length because my db
+    # works nice with the data size, it can be larger though.
+    maxSegLen = 16 * 1024
+    quotient = math.ceil(msgLen / maxSegLen)
     if quotient > 1:
-        data[2] = 32000
+        data[2] = maxSegLen
         pass
     data[0] = quotient
     data[1] = data[1] // quotient   # get the lower bound
     return data
 
 def main_JPEG_Stream(args):
+    global GLOBAL_TERMINATE_SIGNAL
+    # applying closing signal
+    signal.signal(signal.SIGTSTP, SignalHandler)
     db = DatabaseInterface.DB(cname = "stream", creg = True, cinit = True)
     res = db.Init()
     if(res != 0):
         print("*failed to connect to database.")
         return 1
-    print('RCVBUF={}'.format(
+    print('maximum RCVBUF={}'.format(
         DatabaseInterface.API.UDP_Socket.getsockopt(
             SocketController.socket.SOL_SOCKET,
             SocketController.socket.SO_RCVBUF
@@ -115,8 +130,11 @@ def main_JPEG_Stream(args):
     print("*stream processor is listening..")
     conn, addr = sock.Listen()
     print("Connected by Address: ", addr)
-    frameCounter = 0
+    frameCounter = 1
     while(True):
+        # ctrl z trap
+        if GLOBAL_TERMINATE_SIGNAL:
+            break
         # caviot: appearantly my encryption method increases the size of the messages
         # so my UDP messages end up being larger than 64Kb, so I have to send the message in segments
         recv = sock.RecvData(conn)
@@ -125,16 +143,23 @@ def main_JPEG_Stream(args):
         segData = CalcSegments(recvLen)
         for x in range(segData[0]):
             lowerBound = segData[2] * x
-            upperBound = segData[2] * x + 1
+            upperBound = segData[2] * (x + 1)
             if x == (segData[0] - 1):
                 upperBound = recvLen
                 pass
-            print("segment[%s:%s]: %s" % (lowerBound, upperBound, recv[lowerBound:upperBound]))
-            db.SendData(recv[lowerBound:upperBound])
+            obj = JSON.loads('{}')
+            obj['_'] = frameCounter
+            obj['seg'] = x
+            obj['frm'] = recv[lowerBound:upperBound]
+            #print("segment[%s:%s]: %s" % (lowerBound, upperBound, recv[lowerBound:upperBound]))
+            db.SendData(recv[lowerBound:upperBound], True)
             time.sleep(segData[1])
             pass
-        db.SendData("END FRAME:{}".format(frameCounter))
-        break
+        obj = JSON.loads('{}')
+        obj['_'] = frameCounter
+        obj['frm'] = "END FRAME"
+        obj['seg'] = segData[0]
+        db.SendToCache(JSON.dumps(obj), append = True)
         frameCounter += 1
         pass
     sock.Close()
@@ -142,6 +167,7 @@ def main_JPEG_Stream(args):
     return 0
 
 def main_MP4_Stream(args):
+    # to be added in the future
     return 0
 
 if __name__ == "__main__":
