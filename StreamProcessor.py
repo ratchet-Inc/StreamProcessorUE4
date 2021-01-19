@@ -17,7 +17,7 @@ GLOBAL_TERMINATE_SIGNAL = False
 
 def ParseArgs():
     args = JSON.loads('{"-host": "127.0.0.1", "-port":8000 }') # default arguments
-    args['-bsize'] = 42 * 1024   # 42 kb approximate default 720p stream size
+    args['-bsize'] = 77 * 1024   # 58kb: approximate maximum frame size for 720p stream
     for i in range(1, len(sys.argv)):
         if('-host' == sys.argv[i].lower()):
             args['-host'] = sys.argv[i+1].strip()
@@ -130,6 +130,7 @@ def main_JPEG_Stream(args):
     print("*stream processor is listening..")
     conn, addr = sock.Listen()
     print("Connected by Address: ", addr)
+    print("Streaming...")
     frameCounter = 1
     while(True):
         # ctrl z trap
@@ -140,7 +141,7 @@ def main_JPEG_Stream(args):
         recv = sock.RecvData(conn)
         recvLen = len(recv)
         sock.SendData(conn, "bytes: " + str(recvLen))
-        print("recieved: %s | bytes: %s." % (recv, recvLen))
+        #print("recieved: %s | bytes: %s." % (recv, recvLen))
         segData = CalcSegments(recvLen)
         for x in range(segData[0]):
             lowerBound = segData[2] * x
