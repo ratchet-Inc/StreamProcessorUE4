@@ -136,7 +136,7 @@ def main_JPEG_Stream(args):
         # ctrl z trap
         if GLOBAL_TERMINATE_SIGNAL:
             break
-        # caviot: appearantly my encryption method increases the size of the messages
+        # caveat: appearantly my encryption method increases the size of the messages
         # so my UDP messages end up being larger than 64Kb, so I have to send the message in segments
         recv = sock.RecvData(conn)
         recvLen = len(recv)
