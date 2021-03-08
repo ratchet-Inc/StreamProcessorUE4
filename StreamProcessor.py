@@ -6,7 +6,7 @@ import threading
 import cv2 as OPENCV
 import numpy as NP
 import SocketController
-import FrameParser
+#import FrameParser
 import time
 import StreamTest as ST
 import DatabaseInterface
